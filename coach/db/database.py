@@ -1,6 +1,7 @@
 import os
 from dotenv import load_dotenv
 from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
 
 load_dotenv()
 
@@ -16,3 +17,15 @@ DATABASE_URL = (
 )
 
 engine = create_engine(DATABASE_URL, echo=False)
+
+# 👇 THIS WAS MISSING
+SessionLocal = sessionmaker(
+    autocommit=False,
+    autoflush=False,
+    bind=engine
+)
+
+from coach.db.models import Base
+
+def create_tables():
+    Base.metadata.create_all(bind=engine)
