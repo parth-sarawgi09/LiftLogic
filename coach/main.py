@@ -42,7 +42,7 @@ def onboard():
 @app.command()
 def plan():
     """
-    Generate a workout plan using Gemini AI
+    Generate a workout plan using AI (Day 4: with memory)
     """
     session = get_session()
 
@@ -53,7 +53,24 @@ def plan():
         session.close()
         return
 
-    prompt = workout_plan_prompt(user)
+    # 🔹 Day 4 addition: fetch recent plans
+    previous_plans = (
+        session.query(WorkoutPlan)
+        .filter(WorkoutPlan.user_id == user.id)
+        .order_by(WorkoutPlan.created_at.desc())
+        .limit(3)
+        .all()
+    )
+
+    # Convert past plans to text
+    history_text = ""
+    if previous_plans:
+        history_text = "\n\nPrevious workout plans:\n"
+        for idx, plan in enumerate(previous_plans, start=1):
+            history_text += f"\nPlan {idx}:\n{plan.plan_text}\n"
+
+    # 🔹 Build prompt with history
+    prompt = workout_plan_prompt(user) + history_text
 
     print("🤖 Generating workout plan...")
     plan_text = generate_workout_plan(prompt)

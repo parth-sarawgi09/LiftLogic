@@ -20,9 +20,10 @@ class UserProfile(Base):
     days_per_week: Mapped[int] = mapped_column(Integer)
 
 
-from sqlalchemy import Text, ForeignKey
-from sqlalchemy.orm import relationship
-
+from datetime import datetime
+from sqlalchemy import Text, ForeignKey, DateTime
+from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.sql import func
 
 class WorkoutPlan(Base):
     __tablename__ = "workout_plan"
@@ -30,3 +31,9 @@ class WorkoutPlan(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("user_profile.id"))
     plan_text: Mapped[str] = mapped_column(Text)
+
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        nullable=False
+    )
