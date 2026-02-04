@@ -3,6 +3,7 @@ from coach.db.session import get_session
 from coach.db.models import UserProfile, WorkoutPlan
 from coach.ai.llm_client import generate_workout_plan
 from coach.ai.prompts import workout_plan_prompt
+from coach.ai.progression import progression_instruction
 
 app = typer.Typer()
 
@@ -42,7 +43,7 @@ def onboard():
 @app.command()
 def plan():
     """
-    Generate a workout plan using AI (Day 4: with memory)
+    Generate a workout plan using AI (Day 5: progressive overload)
     """
     session = get_session()
 
@@ -53,7 +54,7 @@ def plan():
         session.close()
         return
 
-    # 🔹 Day 4 addition: fetch recent plans
+    # 🔹 Fetch last 3 workout plans (memory)
     previous_plans = (
         session.query(WorkoutPlan)
         .filter(WorkoutPlan.user_id == user.id)
@@ -62,15 +63,23 @@ def plan():
         .all()
     )
 
-    # Convert past plans to text
+    # 🔹 Convert history to text
     history_text = ""
     if previous_plans:
         history_text = "\n\nPrevious workout plans:\n"
         for idx, plan in enumerate(previous_plans, start=1):
             history_text += f"\nPlan {idx}:\n{plan.plan_text}\n"
 
-    # 🔹 Build prompt with history
-    prompt = workout_plan_prompt(user) + history_text
+    # 🔥 Day 5: rule-based progression logic
+    progression_text = progression_instruction(user, previous_plans)
+
+    # 🔹 Final prompt sent to LLM
+    prompt = (
+        workout_plan_prompt(user)
+        + history_text
+        + "\n\nProgression instructions:\n"
+        + progression_text
+    )
 
     print("🤖 Generating workout plan...")
     plan_text = generate_workout_plan(prompt)
