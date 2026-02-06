@@ -4,14 +4,12 @@ from coach.db.models import UserProfile, WorkoutPlan
 from coach.ai.llm_client import generate_workout_plan
 from coach.ai.prompts import workout_plan_prompt
 from coach.ai.progression import progression_instruction
+from coach.ai.feedback import feedback_instruction
 
 app = typer.Typer()
 
 
 def select_user(session):
-    """
-    Allow user to select a profile from the database
-    """
     users = session.query(UserProfile).all()
 
     if not users:
@@ -37,9 +35,6 @@ def select_user(session):
 
 @app.command()
 def onboard():
-    """
-    Onboard a new user
-    """
     name = input("Name: ")
     age = int(input("Age: "))
     height = int(input("Height (cm): "))
@@ -69,19 +64,14 @@ def onboard():
 
 @app.command()
 def plan():
-    """
-    Generate a workout plan using AI (Day 6: multi-user support)
-    """
     session = get_session()
-
     user = select_user(session)
 
     if not user:
-        print("❌ No users found. Please run onboard first.")
+        print("❌ No users found.")
         session.close()
         return
 
-    # 🔹 Fetch last 3 plans for selected user
     previous_plans = (
         session.query(WorkoutPlan)
         .filter(WorkoutPlan.user_id == user.id)
@@ -90,21 +80,22 @@ def plan():
         .all()
     )
 
-    # 🔹 Convert history to text
     history_text = ""
     if previous_plans:
         history_text = "\n\nPrevious workout plans:\n"
-        for idx, plan in enumerate(previous_plans, start=1):
-            history_text += f"\nPlan {idx}:\n{plan.plan_text}\n"
+        for plan in previous_plans:
+            history_text += f"\n{plan.plan_text}\n"
 
-    # 🔥 Day 5 progression logic
+    latest_feedback = previous_plans[0].feedback if previous_plans else None
+    feedback_text = feedback_instruction(latest_feedback)
     progression_text = progression_instruction(user, previous_plans)
 
-    # 🔹 Final prompt
     prompt = (
         workout_plan_prompt(user)
         + history_text
-        + "\n\nProgression instructions:\n"
+        + "\n\nFeedback analysis:\n"
+        + feedback_text
+        + "\n\nProgression strategy:\n"
         + progression_text
     )
 
@@ -122,6 +113,85 @@ def plan():
 
     print("✅ Workout plan generated and saved!\n")
     print(plan_text)
+
+
+@app.command()
+def feedback():
+    session = get_session()
+    user = select_user(session)
+
+    if not user:
+        print("❌ No users found.")
+        session.close()
+        return
+
+    last_plan = (
+        session.query(WorkoutPlan)
+        .filter(WorkoutPlan.user_id == user.id)
+        .order_by(WorkoutPlan.created_at.desc())
+        .first()
+    )
+
+    if not last_plan:
+        print("❌ No workout plans found for this user.")
+        session.close()
+        return
+
+    print("\nHow did the last workout feel?")
+    print("1. Easy")
+    print("2. Good")
+    print("3. Hard")
+
+    choice = input("Enter choice (1/2/3): ").strip()
+
+    mapping = {"1": "easy", "2": "good", "3": "hard"}
+    feedback = mapping.get(choice)
+
+    if not feedback:
+        print("❌ Invalid input.")
+        session.close()
+        return
+
+    last_plan.feedback = feedback
+    session.commit()
+    session.close()
+
+    print("✅ Feedback saved successfully!")
+
+
+@app.command()
+def history():
+    session = get_session()
+    user = select_user(session)
+
+    if not user:
+        print("❌ No users found.")
+        session.close()
+        return
+
+    plans = (
+        session.query(WorkoutPlan)
+        .filter(WorkoutPlan.user_id == user.id)
+        .order_by(WorkoutPlan.created_at.desc())
+        .all()
+    )
+
+    if not plans:
+        print("❌ No workout history found for this user.")
+        session.close()
+        return
+
+    print(f"\n📜 Workout history for {user.name}:\n")
+
+    for idx, plan in enumerate(plans, start=1):
+        print(f"--- Plan {idx} ---")
+        print(f"Date: {plan.created_at}")
+        if plan.feedback:
+            print(f"Feedback: {plan.feedback}")
+        print(plan.plan_text)
+        print()
+
+    session.close()
 
 
 if __name__ == "__main__":

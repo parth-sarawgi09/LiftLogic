@@ -1,5 +1,6 @@
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
-from sqlalchemy import String, Integer
+from sqlalchemy import String, Integer, Text, ForeignKey, DateTime
+from sqlalchemy.sql import func
 from datetime import datetime
 
 
@@ -20,17 +21,14 @@ class UserProfile(Base):
     days_per_week: Mapped[int] = mapped_column(Integer)
 
 
-from datetime import datetime
-from sqlalchemy import Text, ForeignKey, DateTime
-from sqlalchemy.orm import Mapped, mapped_column
-from sqlalchemy.sql import func
-
 class WorkoutPlan(Base):
     __tablename__ = "workout_plan"
 
     id: Mapped[int] = mapped_column(primary_key=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("user_profile.id"))
+
     plan_text: Mapped[str] = mapped_column(Text)
+    feedback: Mapped[str | None] = mapped_column(String(20), nullable=True)
 
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
