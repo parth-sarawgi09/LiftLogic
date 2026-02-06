@@ -73,7 +73,7 @@ def onboard():
 
 
 # -------------------------
-# Command: Generate Plan
+# Command: Generate Plan (DAY 10)
 # -------------------------
 @app.command()
 def plan():
@@ -93,23 +93,29 @@ def plan():
         .all()
     )
 
+    # -------- History --------
     history_text = ""
     if previous_plans:
         history_text = "\n\nPrevious workout plans:\n"
         for idx, plan in enumerate(previous_plans, start=1):
             history_text += f"\nPlan {idx}:\n{plan.plan_text}\n"
 
+    # -------- Feedback --------
     latest_feedback = previous_plans[0].feedback if previous_plans else None
     feedback_text = feedback_instruction(latest_feedback)
 
+    # -------- Fatigue / Recovery --------
     training_state = infer_training_state(previous_plans)
     recovery_text = recovery_instruction(training_state)
 
+    # -------- Injury --------
     injury_note = previous_plans[0].injury_note if previous_plans else None
     injury_text = injury_instruction(injury_note)
 
+    # -------- Progression --------
     progression_text = progression_instruction(user, previous_plans)
 
+    # -------- Final Prompt --------
     prompt = (
         workout_plan_prompt(user)
         + history_text
@@ -162,40 +168,19 @@ def injury():
     )
 
     if not last_plan:
-        print("❌ No workout plan found.")
+        print("❌ No workout plans found for this user.")
         session.close()
         return
 
-    print("\nAny pain or injury?")
-    print("1. None")
-    print("2. Shoulder")
-    print("3. Knee")
-    print("4. Lower back")
-    print("5. Elbow")
-    print("6. Wrist")
+    print("\nDescribe any injury or pain (or press Enter for none):")
+    note = input("> ").strip()
 
-    mapping = {
-        "1": "none",
-        "2": "shoulder",
-        "3": "knee",
-        "4": "lower back",
-        "5": "elbow",
-        "6": "wrist",
-    }
-
-    choice = input("Enter choice: ").strip()
-    injury = mapping.get(choice)
-
-    if not injury:
-        print("❌ Invalid input.")
-        session.close()
-        return
-
-    last_plan.injury_note = injury
+    last_plan.injury_note = note if note else None
     session.commit()
     session.close()
 
-    print("✅ Injury information saved!")
+    print("✅ Injury note saved. Future plans will adapt.")
+
 
 
 # -------------------------
