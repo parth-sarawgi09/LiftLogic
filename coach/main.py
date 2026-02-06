@@ -9,6 +9,8 @@ from coach.ai.feedback import feedback_instruction
 from coach.ai.fatigue import infer_training_state
 from coach.ai.recovery import recovery_instruction
 from coach.ai.injury import injury_instruction
+from coach.ai.substitutions import substitution_instruction
+
 
 app = typer.Typer()
 
@@ -73,7 +75,7 @@ def onboard():
 
 
 # -------------------------
-# Command: Generate Plan (DAY 10)
+# Command: Generate Plan (DAY 11)
 # -------------------------
 @app.command()
 def plan():
@@ -112,6 +114,9 @@ def plan():
     injury_note = previous_plans[0].injury_note if previous_plans else None
     injury_text = injury_instruction(injury_note)
 
+    # -------- Substitutions (DAY 11) --------
+    substitution_text = substitution_instruction(injury_note)
+
     # -------- Progression --------
     progression_text = progression_instruction(user, previous_plans)
 
@@ -123,6 +128,8 @@ def plan():
         + training_state
         + "\n\nInjury considerations:\n"
         + injury_text
+        + "\n\nExercise substitutions:\n"
+        + substitution_text
         + "\n\nFeedback analysis:\n"
         + feedback_text
         + "\n\nRecovery strategy:\n"
@@ -180,7 +187,6 @@ def injury():
     session.close()
 
     print("✅ Injury note saved. Future plans will adapt.")
-
 
 
 # -------------------------
