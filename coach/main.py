@@ -11,9 +11,11 @@ from coach.ai.recovery import recovery_instruction
 from coach.ai.injury import injury_instruction
 from coach.ai.substitutions import substitution_instruction
 
-# ✅ DAY 12 ADDITION
+# ✅ DAY 12
 from coach.ai.reflection import reflection_instruction
 
+# ✅ DAY 13
+from coach.memory.vector_store import store_plan, find_similar_plans
 
 app = typer.Typer()
 
@@ -78,7 +80,7 @@ def onboard():
 
 
 # -------------------------
-# Command: Generate Plan (DAY 12)
+# Command: Generate Plan (DAY 13)
 # -------------------------
 @app.command()
 def plan():
@@ -123,9 +125,23 @@ def plan():
     # -------- Progression --------
     progression_text = progression_instruction(user, previous_plans)
 
+    # =========================
+    # ✅ DAY 13: SEMANTIC MEMORY
+    # =========================
+    similar_plans = find_similar_plans(
+        f"{user.goal} {user.experience} {training_state}"
+    )
+
+    semantic_text = ""
+    if similar_plans:
+        semantic_text = "\n\nRelevant past experiences:\n"
+        for plan in similar_plans:
+            semantic_text += f"\n{plan}\n"
+
     # -------- Base Prompt --------
     prompt = (
         workout_plan_prompt(user)
+        + semantic_text
         + history_text
         + "\n\nTraining state:\n"
         + training_state
@@ -150,6 +166,7 @@ def plan():
     reflection_prompt = reflection_instruction(draft_plan)
     final_plan = generate_workout_plan(reflection_prompt)
 
+    # -------- Save to DB --------
     workout_plan = WorkoutPlan(
         user_id=user.id,
         plan_text=final_plan,
@@ -157,9 +174,15 @@ def plan():
 
     session.add(workout_plan)
     session.commit()
+
+    # =========================
+    # ✅ DAY 13: STORE IN VECTOR DB
+    # =========================
+    store_plan(workout_plan.id, final_plan)
+
     session.close()
 
-    print("✅ Workout plan generated and refined!\n")
+    print("✅ Workout plan generated, refined, and remembered!\n")
     print(final_plan)
 
 
