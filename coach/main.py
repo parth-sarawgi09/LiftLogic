@@ -11,6 +11,9 @@ from coach.ai.recovery import recovery_instruction
 from coach.ai.injury import injury_instruction
 from coach.ai.substitutions import substitution_instruction
 
+# ✅ DAY 12 ADDITION
+from coach.ai.reflection import reflection_instruction
+
 
 app = typer.Typer()
 
@@ -75,7 +78,7 @@ def onboard():
 
 
 # -------------------------
-# Command: Generate Plan (DAY 11)
+# Command: Generate Plan (DAY 12)
 # -------------------------
 @app.command()
 def plan():
@@ -114,13 +117,13 @@ def plan():
     injury_note = previous_plans[0].injury_note if previous_plans else None
     injury_text = injury_instruction(injury_note)
 
-    # -------- Substitutions (DAY 11) --------
+    # -------- Substitutions --------
     substitution_text = substitution_instruction(injury_note)
 
     # -------- Progression --------
     progression_text = progression_instruction(user, previous_plans)
 
-    # -------- Final Prompt --------
+    # -------- Base Prompt --------
     prompt = (
         workout_plan_prompt(user)
         + history_text
@@ -139,23 +142,29 @@ def plan():
     )
 
     print(f"\n🤖 Generating workout plan for {user.name}...")
-    plan_text = generate_workout_plan(prompt)
+    draft_plan = generate_workout_plan(prompt)
+
+    # =========================
+    # ✅ DAY 12: SELF-REFLECTION
+    # =========================
+    reflection_prompt = reflection_instruction(draft_plan)
+    final_plan = generate_workout_plan(reflection_prompt)
 
     workout_plan = WorkoutPlan(
         user_id=user.id,
-        plan_text=plan_text,
+        plan_text=final_plan,
     )
 
     session.add(workout_plan)
     session.commit()
     session.close()
 
-    print("✅ Workout plan generated and saved!\n")
-    print(plan_text)
+    print("✅ Workout plan generated and refined!\n")
+    print(final_plan)
 
 
 # -------------------------
-# Command: Injury Input (DAY 10)
+# Command: Injury
 # -------------------------
 @app.command()
 def injury():
@@ -175,7 +184,7 @@ def injury():
     )
 
     if not last_plan:
-        print("❌ No workout plans found for this user.")
+        print("❌ No workout plans found.")
         session.close()
         return
 
@@ -186,7 +195,7 @@ def injury():
     session.commit()
     session.close()
 
-    print("✅ Injury note saved. Future plans will adapt.")
+    print("✅ Injury note saved.")
 
 
 # -------------------------
@@ -231,7 +240,7 @@ def feedback():
     session.commit()
     session.close()
 
-    print("✅ Feedback saved successfully!")
+    print("✅ Feedback saved!")
 
 
 # -------------------------
