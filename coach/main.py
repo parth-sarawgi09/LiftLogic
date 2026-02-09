@@ -1,6 +1,7 @@
 import typer
 from coach.db.session import get_session
-from coach.db.models import UserProfile, WorkoutPlan
+from coach.db.models import UserProfile, WorkoutPlan, TrainingOutcome
+
 
 from coach.ai.llm_client import generate_workout_plan
 from coach.ai.prompts import workout_plan_prompt
@@ -303,6 +304,52 @@ def history():
         print("-" * 40)
 
     session.close()
+
+# -------------------------
+# Command: Outcome (DAY 14)
+# -------------------------
+@app.command()
+def outcome():
+    session = get_session()
+    user = select_user(session)
+
+    if not user:
+        print("❌ No users found.")
+        session.close()
+        return
+
+    last_plan = (
+        session.query(WorkoutPlan)
+        .filter(WorkoutPlan.user_id == user.id)
+        .order_by(WorkoutPlan.created_at.desc())
+        .first()
+    )
+
+    if not last_plan:
+        print("❌ No workout plan found.")
+        session.close()
+        return
+
+    print("\nRecord training outcome")
+    adherence = input("Adherence (full / partial / skipped): ").strip()
+    soreness = input("Soreness (none / mild / high): ").strip()
+    progress = input("Progress (improved / stalled / regressed): ").strip()
+    notes = input("Notes (optional): ").strip()
+
+    outcome = TrainingOutcome(
+        user_id=user.id,
+        plan_id=last_plan.id,
+        adherence=adherence,
+        soreness=soreness,
+        progress=progress,
+        notes=notes or None,
+    )
+
+    session.add(outcome)
+    session.commit()
+    session.close()
+
+    print("✅ Training outcome saved. Coach can now learn from results.")
 
 
 if __name__ == "__main__":

@@ -37,3 +37,20 @@ class WorkoutPlan(Base):
         nullable=False,
     )
 
+class TrainingOutcome(Base):
+    __tablename__ = "training_outcome"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("user_profile.id"))
+    plan_id: Mapped[int] = mapped_column(ForeignKey("workout_plan.id"))
+
+    adherence: Mapped[str] = mapped_column(String(20))   # full / partial / skipped
+    soreness: Mapped[str] = mapped_column(String(20))    # none / mild / high
+    progress: Mapped[str] = mapped_column(String(20))    # improved / stalled / regressed
+    notes: Mapped[str | None] = mapped_column(Text, nullable=True)
+
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        nullable=False,
+    )

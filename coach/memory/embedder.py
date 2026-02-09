@@ -1,6 +1,12 @@
-from sentence_transformers import SentenceTransformer
+# coach/memory/embedder.py
 
-_model = SentenceTransformer("all-MiniLM-L6-v2")
+_model = None
 
-def embed(text: str) -> list[float]:
+def embed(text: str):
+    global _model
+
+    if _model is None:
+        from sentence_transformers import SentenceTransformer
+        _model = SentenceTransformer("all-MiniLM-L6-v2")
+
     return _model.encode(text).tolist()
