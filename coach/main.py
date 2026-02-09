@@ -18,6 +18,15 @@ from coach.ai.reflection import reflection_instruction
 # ✅ DAY 13
 from coach.memory.vector_store import store_plan, find_similar_plans
 
+from coach.ai.constraints import volume_constraints, recovery_constraints, beginner_rules
+
+from coach.ai.validator import validate_plan
+
+from coach.ai.semantic_validator import semantic_validation_prompt, parse_semantic_result
+
+from coach.ai.confidence import confidence_prompt, parse_confidence
+
+
 app = typer.Typer()
 
 
@@ -139,6 +148,58 @@ def plan():
         for plan in similar_plans:
             semantic_text += f"\n{plan}\n"
 
+    volume_rules = volume_constraints(user)
+    recovery_rules = recovery_constraints(training_state)
+    beginner_guardrails = beginner_rules(user)
+
+    constraints = volume_constraints(user)
+    errors = validate_plan(final_plan, constraints)
+
+    if errors:
+        correction_prompt = (
+            "The following workout plan violates coaching rules:\n"
+            + "\n".join(f"- {e}" for e in errors)
+            + "\n\nFix the plan while keeping it effective and safe.\n\n"
+            + final_plan
+        )
+
+        final_plan = generate_workout_plan(correction_prompt)
+
+    context = {
+        "training_state": training_state,
+        "injury_note": injury_note,
+    }
+
+    judge_prompt = semantic_validation_prompt(user, final_plan, context)
+    judgement = generate_workout_plan(judge_prompt)
+
+    is_valid, reasons = parse_semantic_result(judgement)
+
+    if not is_valid:
+        correction_prompt = (
+            "The following workout plan is NOT appropriate for the user:\n"
+            + "\n".join(f"- {r}" for r in reasons)
+            + "\n\nRewrite the plan to fix these issues:\n\n"
+            + final_plan
+        )
+
+        final_plan = generate_workout_plan(correction_prompt)
+
+
+    confidence_prompt_text = confidence_prompt(user, final_plan, context)
+    confidence_result = generate_workout_plan(confidence_prompt_text)
+
+    is_confident, missing_info = parse_confidence(confidence_result)
+
+    if not is_confident:
+        print("\n⚠️ I need a bit more information before finalizing your plan:")
+        for item in missing_info:
+            print(f"- {item}")
+
+        print("\nPlease answer these and re-run the plan command.")
+        session.close()
+        return
+
     # -------- Base Prompt --------
     prompt = (
         workout_plan_prompt(user)
@@ -156,6 +217,11 @@ def plan():
         + recovery_text
         + "\n\nProgression strategy:\n"
         + progression_text
+        + "\n\nCoaching constraints (must follow strictly):\n"
+        + f"Volume limits: {volume_rules}\n"
+        + f"Recovery rules: {recovery_rules}\n"
+        + beginner_guardrails
+
     )
 
     print(f"\n🤖 Generating workout plan for {user.name}...")
