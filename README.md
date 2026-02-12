@@ -1,202 +1,48 @@
 🧠 GenAI Gym Coach
-An Adaptive AI Workout Coaching System with Memory, Validation & Outcome Learning
-🚀 Overview
 
-GenAI Gym Coach is an intelligent workout planning system powered by Large Language Models (LLMs).
+GenAI Gym Coach is a CLI-based AI workout planning system built with Python.
 
-Unlike static workout generators, this system:
+It generates personalized workout programs, adapts to injuries and fatigue, validates plans with safety rules, stores memory using embeddings, and learns from real training outcomes.
 
-Generates personalized training programs
+✨ Features
 
-Adapts to injuries and fatigue
+Personalized workout plan generation
 
-Learns from user feedback
+Goal-based training (muscle gain / fat loss)
 
-Validates plans using rule-based guardrails
+Experience-based logic (beginner / intermediate / advanced)
 
-Uses semantic memory retrieval
+Injury-aware substitutions
 
-Tracks real training outcomes
+Fatigue modeling from feedback
 
-Implements a full closed-loop adaptive learning system
+Rule-based safety constraints
 
-This project demonstrates advanced AI system design beyond simple prompt engineering.
+Semantic validation layer
 
-🧩 Core Capabilities
-1️⃣ Personalized Workout Generation
+LLM self-reflection refinement
 
-Goal-aware (muscle_gain / fat_loss)
+Vector memory storage (semantic retrieval)
 
-Experience-aware (beginner / intermediate / advanced)
-
-Progressive overload logic
-
-Recovery strategy integration
-
-2️⃣ Injury-Aware Adaptation
-
-Stores injury notes
-
-Suggests safe substitutions
-
-Automatically modifies unsafe exercises
-
-3️⃣ Feedback & Fatigue Modeling
-
-After each workout:
-
-User rates difficulty (easy / good / hard)
-
-System infers training state:
-
-recovering
-
-progressing
-
-fatigued
-
-Future plans adapt accordingly
-
-4️⃣ Semantic Memory (Vector Database)
-
-Stores past workout plans as embeddings
-
-Retrieves similar past training scenarios
-
-Injects contextual memory into new plan generation
-
-5️⃣ Rule-Based Guardrails
-
-Strict enforcement of:
-
-Volume constraints
-
-Recovery constraints
-
-Beginner safety rules
-
-Plans violating constraints are auto-corrected.
-
-6️⃣ LLM Self-Reflection
-
-Each workout plan goes through:
-
-Draft generation
-
-Self-critique pass
-
-Plan refinement
-
-Improves structure, realism, and safety.
-
-7️⃣ Semantic Validation Layer
-
-A second LLM acts as a judge to verify:
-
-Plan appropriateness
-
-Injury compatibility
-
-Recovery alignment
-
-If invalid → plan is rewritten.
-
-8️⃣ Confidence Estimation
-
-Before finalizing, the system checks:
-
-Is enough information available?
-
-Is user context sufficient?
-
-If not, it asks clarifying questions instead of guessing.
-
-9️⃣ Training Outcome Tracking
-
-After completing a plan, the user records:
-
-Adherence: full / partial / skipped
-
-Soreness: none / mild / high
-
-Progress: improved / stalled / regressed
-
-Optional notes
-
-This enables true adaptive coaching based on real outcomes.
-
-🏗️ System Architecture (High-Level)
-User Profile
-     ↓
-Plan Generation
-     ↓
-Self Reflection
-     ↓
-Rule Validation
-     ↓
-Semantic Validation
-     ↓
-Confidence Check
-     ↓
-Final Plan
-     ↓
-Workout Execution
-     ↓
-Outcome Recording
-     ↓
-Fatigue Inference
-     ↓
-Next Adaptive Plan
-
-
-This is a closed-loop AI coaching system, not a one-shot generator.
+Training outcome tracking
 
 🛠 Tech Stack
 
-Python 3.10+
+Python
 
-Typer (CLI framework)
+Typer (CLI)
 
-SQLAlchemy ORM
+SQLAlchemy
 
 MySQL
 
 Sentence Transformers
 
-Vector Store (Chroma)
+Chroma (vector store)
 
-OpenAI / LLM API
+OpenAI API
 
-HuggingFace embeddings
-
-📁 Project Structure
-coach/
-│
-├── main.py
-│
-├── db/
-│   ├── models.py
-│   ├── session.py
-│   └── init_db.py
-│
-├── ai/
-│   ├── prompts.py
-│   ├── progression.py
-│   ├── fatigue.py
-│   ├── recovery.py
-│   ├── injury.py
-│   ├── substitutions.py
-│   ├── reflection.py
-│   ├── validator.py
-│   ├── semantic_validator.py
-│   ├── confidence.py
-│   └── constraints.py
-│
-└── memory/
-    ├── vector_store.py
-    └── embedder.py
-
-⚙️ Setup Guide
+🚀 How to Run the Project
 1️⃣ Clone the Repository
 git clone https://github.com/your-username/gen-ai-gym-coach.git
 cd gen-ai-gym-coach
@@ -205,7 +51,7 @@ cd gen-ai-gym-coach
 python -m venv venv
 
 
-Activate:
+Activate it:
 
 Windows
 
@@ -219,12 +65,12 @@ source venv/bin/activate
 3️⃣ Install Dependencies
 pip install -r requirements.txt
 
-4️⃣ Configure Environment Variables
+4️⃣ Setup Environment Variables
 
-Create a .env file in root:
+Create a .env file in the root directory:
 
 DATABASE_URL=mysql+pymysql://username:password@localhost:3306/gym_coach
-OPENAI_API_KEY=your_api_key_here
+OPENAI_API_KEY=your_openai_api_key
 
 
 Replace:
@@ -235,58 +81,25 @@ password
 
 gym_coach
 
-your_api_key_here
+your_openai_api_key
 
-5️⃣ Initialize Database
+5️⃣ Initialize the Database
 python -m coach.db.init_db
 
 
-This creates:
+This will create all required tables.
 
-user_profile
-
-workout_plan
-
-training_outcome
-
-🖥 How to Run
-
-All commands are CLI-based.
-
-👤 Onboard a New User
+💻 CLI Commands
+👤 Onboard New User
 python -m coach.main onboard
 
 🏋️ Generate Workout Plan
 python -m coach.main plan
 
-
-Includes:
-
-Memory retrieval
-
-Fatigue modeling
-
-Constraint enforcement
-
-Semantic validation
-
-Self-reflection
-
-Vector storage
-
-💬 Submit Workout Feedback
+💬 Submit Feedback (Easy / Good / Hard)
 python -m coach.main feedback
 
-
-Options:
-
-1 → Easy
-
-2 → Good
-
-3 → Hard
-
-🩹 Record Injury
+🩹 Add Injury Note
 python -m coach.main injury
 
 📊 Record Training Outcome
@@ -295,38 +108,20 @@ python -m coach.main outcome
 📜 View Workout History
 python -m coach.main history
 
-🧠 Why This Project Is Impressive
+🧠 What Makes This Different
 
-This is not a basic LLM wrapper.
+This is not a basic workout generator.
 
-It demonstrates:
+It includes:
 
-Multi-stage LLM pipelines
+Multi-stage LLM refinement
 
-AI validation architecture
+Constraint validation
 
-Guardrail enforcement
+Semantic memory retrieval
 
-Memory-augmented generation
+Confidence estimation
 
-Outcome-driven adaptation
+Outcome-based adaptation
 
-Human-in-the-loop feedback modeling
-
-Confidence estimation systems
-
-This reflects real-world AI system design, not tutorial-level prompt engineering.
-
-🔮 Future Enhancements
-
-Web dashboard (FastAPI + React)
-
-Reinforcement-style weight progression
-
-Analytics visualization
-
-Dockerized deployment
-
-Cloud-hosted API
-
-Multi-user scaling
+It behaves more like an intelligent coaching system than a static planner.
