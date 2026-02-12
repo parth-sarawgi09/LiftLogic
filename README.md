@@ -1,127 +1,231 @@
-🧠 GenAI Gym Coach
+# 🧠 GenAI Gym Coach  
 
-GenAI Gym Coach is a CLI-based AI workout planning system built with Python.
+**GenAI Gym Coach** is a CLI-based AI-powered workout planning system built with Python.  
 
-It generates personalized workout programs, adapts to injuries and fatigue, validates plans with safety rules, stores memory using embeddings, and learns from real training outcomes.
+It generates personalized workout programs based on user goals and experience level, adapts to injuries and fatigue, validates plans with safety constraints, stores semantic memory using embeddings, and learns from real-world training outcomes.
 
-✨ Features
+---
 
-Personalized workout plan generation
+# ✨ Features
 
-Goal-based training (muscle gain / fat loss)
+## 🏋️ Intelligent Workout Generation
+- Goal-based planning (muscle_gain / fat_loss)
+- Experience-aware logic (beginner / intermediate / advanced)
+- Progressive overload strategy
+- Recovery-aware scheduling
 
-Experience-based logic (beginner / intermediate / advanced)
+## 🩹 Injury Adaptation
+- Accepts injury input
+- Automatically substitutes risky movements
+- Adjusts volume and intensity accordingly
 
-Injury-aware substitutions
+## 🧠 Multi-Layer AI System
+- LLM-generated base workout
+- Self-reflection refinement pass
+- Rule-based validation engine
+- Semantic validation layer
+- Confidence scoring before finalization
 
-Fatigue modeling from feedback
+## 📊 Training Feedback & Outcome Tracking
+- User feedback (easy / good / hard)
+- Fatigue inference
+- Adherence tracking
+- Progress evaluation (improved / stalled / regressed)
+- Long-term learning from results
 
-Rule-based safety constraints
+## 🧬 Semantic Memory
+- Vector embedding storage of plans
+- Retrieval of similar past plans
+- Context-aware future plan generation
 
-Semantic validation layer
+---
 
-LLM self-reflection refinement
+# 🛠 Tech Stack
 
-Vector memory storage (semantic retrieval)
+- **Python**
+- **Typer (CLI framework)**
+- **SQLAlchemy**
+- **MySQL**
+- **Sentence Transformers**
+- **Chroma (Vector Store)**
+- **OpenAI API**
 
-Training outcome tracking
+---
 
-🛠 Tech Stack
+# 🚀 How To Run The Project
 
-Python
+---
 
-Typer (CLI)
+## 1️⃣ Clone The Repository
 
-SQLAlchemy
-
-MySQL
-
-Sentence Transformers
-
-Chroma (vector store)
-
-OpenAI API
-
-🚀 How to Run the Project
-1️⃣ Clone the Repository
+```bash
 git clone https://github.com/your-username/gen-ai-gym-coach.git
 cd gen-ai-gym-coach
+```
 
-2️⃣ Create Virtual Environment
+---
+
+## 2️⃣ Create Virtual Environment
+
+```bash
 python -m venv venv
-
+```
 
 Activate it:
 
-Windows
-
+### Windows
+```bash
 venv\Scripts\activate
+```
 
-
-Mac/Linux
-
+### Mac / Linux
+```bash
 source venv/bin/activate
+```
 
-3️⃣ Install Dependencies
+---
+
+## 3️⃣ Install Dependencies
+
+```bash
 pip install -r requirements.txt
+```
 
-4️⃣ Setup Environment Variables
+---
 
-Create a .env file in the root directory:
+## 4️⃣ Setup Environment Variables
 
+Create a `.env` file in the root directory and add:
+
+```
 DATABASE_URL=mysql+pymysql://username:password@localhost:3306/gym_coach
-OPENAI_API_KEY=your_openai_api_key
-
+GROQAI_API_KEY=your_openai_api_key
+```
 
 Replace:
+- `username`
+- `password`
+- `gym_coach`
+- `your_GROQAI_api_key`
 
-username
+---
 
-password
+## 5️⃣ Initialize The Database
 
-gym_coach
-
-your_openai_api_key
-
-5️⃣ Initialize the Database
+```bash
 python -m coach.db.init_db
+```
 
+This command creates all required database tables.
 
-This will create all required tables.
+---
 
-💻 CLI Commands
-👤 Onboard New User
+# 💻 CLI Commands
+
+---
+
+## 👤 Onboard A New User
+
+```bash
 python -m coach.main onboard
+```
 
-🏋️ Generate Workout Plan
+---
+
+## 🏋️ Generate Workout Plan
+
+```bash
 python -m coach.main plan
+```
 
-💬 Submit Feedback (Easy / Good / Hard)
+---
+
+## 💬 Submit Workout Feedback
+
+```bash
 python -m coach.main feedback
+```
 
-🩹 Add Injury Note
+Options:
+- easy  
+- good  
+- hard  
+
+---
+
+## 🩹 Add Injury Note
+
+```bash
 python -m coach.main injury
+```
 
-📊 Record Training Outcome
+---
+
+## 📊 Record Training Outcome
+
+```bash
 python -m coach.main outcome
+```
 
-📜 View Workout History
+You will be prompted for:
+- adherence (full / partial / skipped)
+- soreness (none / mild / high)
+- progress (improved / stalled / regressed)
+- notes (optional)
+
+---
+
+## 📜 View Workout History
+
+```bash
 python -m coach.main history
+```
 
-🧠 What Makes This Different
+---
 
-This is not a basic workout generator.
+# 🧠 System Architecture (High-Level)
+
+1. User inputs profile data  
+2. System retrieves past plans  
+3. Fatigue and injury states are inferred  
+4. Semantic memory retrieves similar plans  
+5. LLM generates base plan  
+6. Self-reflection refines plan  
+7. Rule-based validator enforces constraints  
+8. Semantic validator checks contextual appropriateness  
+9. Confidence layer ensures sufficient information  
+10. Final plan stored in SQL + Vector DB  
+
+---
+
+# 🎯 Why This Project Is Different
+
+This is not a basic workout generator.  
 
 It includes:
+- Multi-pass LLM reasoning  
+- Deterministic rule validation  
+- Semantic retrieval memory  
+- Confidence-based gating  
+- Outcome-driven learning loop  
 
-Multi-stage LLM refinement
+It behaves closer to an **AI coaching system** than a static plan generator.
 
-Constraint validation
+---
 
-Semantic memory retrieval
+# 📌 Requirements
 
-Confidence estimation
+- Python 3.10+
+- MySQL running locally
+- OpenAI API key
+- Internet connection (for embeddings & LLM calls)
 
-Outcome-based adaptation
+---
 
-It behaves more like an intelligent coaching system than a static planner.
+# 📄 License
+
+This project is for educational and portfolio demonstration purposes.
+
+---
+
+**Built as an advanced AI system design project focused on reasoning pipelines, validation layers, and adaptive memory.**
