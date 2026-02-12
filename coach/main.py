@@ -34,6 +34,9 @@ from coach.ai.outcome_analysis import analyze_outcomes
 from coach.ai.adaptation import adaptation_instruction
 
 
+from coach.analytics.evaluator import calculate_coaching_score
+
+
 app = typer.Typer()
 
 
@@ -380,5 +383,41 @@ def outcome():
     print("✅ Training outcome saved.")
 
 
+@app.command()
+def report():
+    session = get_session()
+    user = select_user(session)
+
+    if not user:
+        print("❌ No users found.")
+        session.close()
+        return
+
+    outcomes = (
+        session.query(TrainingOutcome)
+        .filter(TrainingOutcome.user_id == user.id)
+        .all()
+    )
+
+    if not outcomes:
+        print("❌ No outcome data found.")
+        session.close()
+        return
+
+    score = calculate_coaching_score(outcomes)
+
+    print(f"\n📊 Coaching Report for {user.name}")
+    print(f"Total Sessions: {len(outcomes)}")
+    print(f"Coaching Score: {score}")
+
+    if score >= 3:
+        print("🔥 Excellent progression.")
+    elif score >= 1.5:
+        print("✅ Stable progress.")
+    else:
+        print("⚠️ Strategy may need adjustment.")
+
+    session.close()
+    
 if __name__ == "__main__":
     app()
