@@ -39,6 +39,7 @@ from coach.analytics.evaluator import calculate_coaching_score
 from coach.ai.trend_analysis import analyze_trends
 from coach.ai.strategy_adaptation import strategic_adaptation_instruction
 
+from coach.ai.periodization import determine_training_phase, phase_instruction
 
 
 app = typer.Typer()
@@ -116,6 +117,10 @@ def plan():
         .all()
     )
 
+    phase = determine_training_phase(user, previous_plans)
+    phase_text = phase_instruction(phase)
+
+
     # -------- Derived State --------
     training_state = infer_training_state(previous_plans)
     injury_note = previous_plans[0].injury_note if previous_plans else None
@@ -159,6 +164,10 @@ def plan():
         + beginner_guardrails
         + "\n\nStrategic adaptation directive:\n"
         + strategy_text
+        + "\n\nCurrent training phase:\n"
+        + phase
+        + "\n\nPhase directive:\n"
+        + phase_text
 
     )
 
