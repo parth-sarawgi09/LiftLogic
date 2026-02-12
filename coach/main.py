@@ -36,6 +36,10 @@ from coach.ai.adaptation import adaptation_instruction
 
 from coach.analytics.evaluator import calculate_coaching_score
 
+from coach.ai.trend_analysis import analyze_trends
+from coach.ai.strategy_adaptation import strategic_adaptation_instruction
+
+
 
 app = typer.Typer()
 
@@ -153,6 +157,9 @@ def plan():
         + f"Volume rules: {volume_rules}\n"
         + f"Recovery rules: {recovery_rules}\n"
         + beginner_guardrails
+        + "\n\nStrategic adaptation directive:\n"
+        + strategy_text
+
     )
 
     print(f"\n🤖 Generating workout plan for {user.name}...")
@@ -225,6 +232,19 @@ def plan():
 
     session.add(workout_plan)
     session.commit()
+
+        # ---- Collect Outcomes for Trend Analysis ----
+    recent_outcomes = (
+        session.query(TrainingOutcome)
+        .filter(TrainingOutcome.user_id == user.id)
+        .order_by(TrainingOutcome.created_at.desc())
+        .limit(5)
+        .all()
+    )
+
+    trend = analyze_trends(recent_outcomes)
+    strategy_text = strategic_adaptation_instruction(trend)
+
 
     # -------------------------------------------------
     # DAY 13: VECTOR MEMORY
@@ -418,6 +438,6 @@ def report():
         print("⚠️ Strategy may need adjustment.")
 
     session.close()
-    
+
 if __name__ == "__main__":
     app()
